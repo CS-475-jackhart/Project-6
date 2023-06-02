@@ -26,7 +26,7 @@ cl_program		    Program;
 cl_context		    Context;
 cl_command_queue	CmdQueue;
 
-//#define CSV
+#define CSV
 
 float hA[MATW][MATW];
 float hB[MATW][MATW];
@@ -101,17 +101,34 @@ int main (int argc, char *argv[]) {
 	size_t cSize = MATW * MATW * sizeof(float);
 
 	cl_mem dA = clCreateBuffer(Context, CL_MEM_READ_ONLY, aSize, NULL, &status);
-	if(status != CL_SUCCESS)
+	if (status != CL_SUCCESS)
 		fprintf(stderr, "clCreateBuffer failed (1)\n");
 
-?????
+    cl_mem dB = clCreateBuffer(Context, CL_MEM_READ_ONLY, bSize, NULL, &status);
+    if (status != CL_SUCCESS)
+		fprintf(stderr, "clCreateBuffer failed (2)\n");
+
+    cl_mem dMW = clCreateBuffer(Context, CL_MEM_READ_ONLY, mwSize, NULL, &status);
+    if(status != CL_SUCCESS)
+		fprintf(stderr, "clCreateBuffer failed (3)\n");
+
+    cl_mem dC = clCreateBuffer(Context, CL_MEM_WRITE_ONLY, cSize, NULL, &status);
+    if (status != CL_SUCCESS) {
+        fprintf(stderr, "clCreateBuffer failed (4)\n");
+    }
 
 	// 6. enqueue the 3 commands to write the data from the host buffers to the device buffers:
 	status = clEnqueueWriteBuffer(CmdQueue, dA, CL_FALSE, 0, aSize, hA, 0, NULL, NULL);
 	if(status != CL_SUCCESS)
 		fprintf(stderr, "clEnqueueWriteBuffer failed (1)\n");
 
-?????
+    status = clEnqueueWriteBuffer(CmdQueue, dB, CL_FALSE, 0, bSize, hB, 0, NULL, NULL);
+    if(status != CL_SUCCESS)
+		fprintf(stderr, "clEnqueueWriteBuffer failed (2)\n");
+
+    status = clEnqueueWriteBuffer(CmdQueue, dMW, CL_FALSE, 0, mwSize, &mw, 0, NULL, NULL);
+    if(status != CL_SUCCESS)
+		fprintf(stderr, "clEnqueueWriteBuffer failed (3)\n");
 
 	Wait(CmdQueue);
 
@@ -148,13 +165,25 @@ int main (int argc, char *argv[]) {
 
 
 	// 9. create the kernel object:
-	Kernel = clCreateKernel( Program, "MatrixMult", &status );
+	Kernel = clCreateKernel(Program, "MatrixMult", &status);
 	if(status != CL_SUCCESS)
 		fprintf(stderr, "clCreateKernel failed\n");
 
 	// 10. setup the arguments to the kernel object:
 
-?????
+    status = clSetKernelArg(Kernel, 0, sizeof(cl_mem), &dA);
+    if (status != CL_SUCCESS)
+        fprintf(stderr, "clSetKernelArg failed (1)");
+
+    status = clSetKernelArg(Kernel, 1, sizeof(cl_mem), &dB);
+    if (status != CL_SUCCESS)
+        fprintf(stderr, "clSetKernelArg failed (2)");
+
+    status = clSetKernelArg(Kernel, 2, sizeof(cl_mem), &dMW);
+    if (status != CL_SUCCESS)
+        fprintf(stderr, "clSetKernelArg failed (1)");
+
+    status = clSetKernelArg(Kernel, 3, sizeof(cl_mem), &dC);
 
 	// 11. enqueue the kernel object for execution:
 	size_t globalWorkSize[3] = { MATW,      MATW,      1 };

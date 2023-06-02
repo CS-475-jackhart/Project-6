@@ -5,7 +5,8 @@ kernel
 void MatrixMult(
     IN global const float *dA, 
     IN global const float *dB, 
-    IN global int *dMW, OUT global float *dC) {
+    IN global int *dMW, 
+    OUT global float *dC) {
 
 	// [dA] is dMW x dMW
 	// [dB] is dMW x dMW
